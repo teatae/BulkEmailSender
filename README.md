@@ -8,6 +8,7 @@ Welcome to Tae's Bulk Email Sender (for Windows)
 Run application  
 Import (Load excel file for preview button) an excel file with the header as columns:  
 First Name, Last Name, Email, Attachments1, Attachments2, Attachments3  
+Attachment values are paths
 
 For templates, use {first_name} as first name and {last_name} as last name  
 
