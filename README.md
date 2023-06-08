@@ -1,4 +1,4 @@
-Welcome to Tae's Bulk Email Sender (for Windows)  
+Welcome to Tae's Bulk Email Sender (Outlook for Windows)  
 ================================================
 
 ## Installing modules to run python file  
