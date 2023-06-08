@@ -7,7 +7,7 @@ pip install tkinter pandas smtplib
 
 ## Installing modules to convert python file into standalone executable with no windows console  
 pip install pyinstaller  
-pyinstaller --noconsole your_script.py  
+pyinstaller --noconsole emailer.py  
 inside your dist > emailer folder, you will have your program as emailer.exe
 
 ## Example of excel file  
