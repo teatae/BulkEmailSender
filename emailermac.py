@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk
+from tkinter import filedialog, messagebox
 import pandas as pd
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -53,7 +54,7 @@ def preview_emails():
 
         # Create a new tab/page for the email preview
         email_page = ttk.Frame(email_preview_notebook)
-        email_preview_notebook.add(email_page, text=f"Email {idx+1}")
+        email_preview_notebook.add(email_page, text="Email " + str(idx+1))
 
         # Create a text widget for the email preview
         preview_text = tk.Text(email_page)
@@ -83,6 +84,7 @@ def preview_emails():
     messagebox.showinfo("Preview Complete", "Email preview completed successfully.")
 
 
+
 def send_emails():
     # Get SMTP variables from input fields
     smtp_username = smtp_username_entry.get()
@@ -102,7 +104,7 @@ def send_emails():
     email_template = email_template_entry.get("1.0", tk.END)
 
     # Create a connection to the SMTP server
-    server = smtplib.SMTP("smtp.office365.com", 587)
+    server = smtplib.SMTP("smtp.office365.com", "587")
     server.starttls()
 
     try:
@@ -148,18 +150,20 @@ def send_emails():
 
     messagebox.showinfo("Success", "Emails sent successfully!")
 
+
     # Close the SMTP connection
     server.quit()
 
 
 def open_preview_emails():
     # ...
+
     # Call the preview_emails function
     preview_emails()
 
-
 def open_send_emails():
     # ...
+
     # Call the send_emails function
     send_emails()
 
@@ -167,6 +171,11 @@ def open_send_emails():
 # Create the main window
 window = tk.Tk()
 window.title("Bulk Email Sender")
+
+icon_path = "C:/Temp/TAE/Projects/22. Bradley emails/icon.ico"
+
+# Set the window icon
+window.iconbitmap(icon_path)
 
 # Set the initial window width and height
 window_width = 800
@@ -193,30 +202,21 @@ subject_entry = tk.Entry(window)
 subject_entry.pack()
 
 # Email Template
-template_label1 = tk.Label(window, text="Please use")
+template_label1 = tk.Label(window, text="Email Template:")
 template_label1.pack()
-template_label2 = tk.Label(window, text="{first_name} as first name and {last_name} as last name")
-template_label2.pack()
-email_template_label = tk.Label(window, text="Email Template:")
-email_template_label.pack()
-email_template_entry = tk.Text(window, height=8)
+email_template_entry = tk.Text(window, height=10, width=50)
 email_template_entry.pack()
 
-template_label3 = tk.Label(window, text="Columns in excel file must be:")
-template_label3.pack()
-template_label4 = tk.Label(window, text="First Name, Last Name, Email, Attachments1, Attachments2, Attachments3")
-template_label4.pack()
-
 # Buttons
-preview_button = tk.Button(window, text="Load excel file for preview", command=preview_emails)
-preview_button.pack()
+preview_emails_button = tk.Button(window, text="Preview Emails", command=open_preview_emails)
+preview_emails_button.pack()
 
-send_button = tk.Button(window, text="Send Emails", command=open_send_emails)
-send_button.pack()
+send_emails_button = tk.Button(window, text="Send Emails", command=open_send_emails)
+send_emails_button.pack()
 
-# Email Preview Notebook
+# Create a notebook for the email previews
 email_preview_notebook = ttk.Notebook(window)
 email_preview_notebook.pack(fill=tk.BOTH, expand=True)
 
-# Start the main loop
+# Run the main event loop
 window.mainloop()
