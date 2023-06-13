@@ -5,6 +5,7 @@ Welcome to Tae's Bulk Email Sender (Outlook for Windows and Mac)
 Headers/columns must be First Name, Last Name, Email, Attachments1, Attachments2, Attachments3.  
 Each email is an excel row, attachment values are paths.  
 ![preview](https://github.com/teatae/BulkEmailSender/blob/main/excel.png?raw=true)  
+![preview](https://github.com/teatae/BulkEmailSender/blob/main/excel2.png?raw=true)
 
 ## Preview of application  
 ![preview](https://github.com/teatae/BulkEmailSender/blob/main/preview.png?raw=true) 
