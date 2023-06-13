@@ -1,4 +1,4 @@
-Welcome to Tae's Bulk Email Sender (Outlook for Windows)  
+Welcome to Tae's Bulk Email Sender (Outlook for Windows and Mac)  
 ================================================
 
 ## Example of excel file  
@@ -19,7 +19,7 @@ pyinstaller --noconsole emailer.py
 Inside your dist > emailer folder, you will have your program as emailer.exe
 
 ## How to use  
-Launch emailer.exe  
+Launch emailer.exe  (emailer.py is for windows, emailermac.py is for mac os)
 Enter Subject in field  
 Write template such as {first_name} is first name and {last_name} is last name  
 Import excel file (Load excel file for preview button)  
