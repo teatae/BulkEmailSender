@@ -124,7 +124,8 @@ def send_emails():
         email = row[2]
 
         # Replace placeholders in the email template with data
-        email_body = email_template.replace('{first_name}', first_name).replace('{last_name}', last_name)
+        email_body = email_template.replace('{first_name}', first_name).replace('{last_name}', last_name).replace('\n', '<br>')
+        email_body = email_body + '<br>'
 
         # Create the email message
         msg = MIMEMultipart()
@@ -220,3 +221,13 @@ email_preview_notebook.pack(fill=tk.BOTH, expand=True)
 
 # Run the main event loop
 window.mainloop()
+
+#/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#(echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> /Users/tae/.zprofile
+#eval "$(/usr/local/bin/brew shellenv)"
+#brew install pip 
+#brew install python 
+#python3.11 -m pip install --upgrade pip 
+#brew install python-tk
+#pip3 install --upgrade pip
+#export PATH="/usr/local/opt/python/libexec/bin:$PATH"
