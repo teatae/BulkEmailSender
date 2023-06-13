@@ -7,7 +7,8 @@ Each email is an excel row, attachment values are paths.
 ![preview](https://github.com/teatae/BulkEmailSender/blob/main/excel.png?raw=true)  
 
 ## Preview of application  
-![preview](https://github.com/teatae/BulkEmailSender/blob/main/preview.png?raw=true)  
+![preview](https://github.com/teatae/BulkEmailSender/blob/main/preview.png?raw=true) 
+![preview](https://github.com/teatae/BulkEmailSender/blob/main/preview2.png?raw=true) 
 
 ## Installing modules to run python file  
 pip install --upgrade pip  
