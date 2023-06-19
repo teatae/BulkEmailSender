@@ -7,8 +7,35 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+import re
+from tkinterhtml import HtmlFrame
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
 excel_data = None
+
+def solve(s):
+    pat = "^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{2,}$"
+    if re.match(pat, s):
+        return True
+    return False
+
+def on_drop(event):
+    global excel_data
+    try:
+        file_path = event.data
+        # Process the Excel file here
+        # You can load and handle the Excel file as per your requirements
+        print("File dropped:", file_path)
+        excel_data = pd.read_excel(file_path)
+        print("Excel data:", excel_data)  # Print excel_data for debugging
+        if excel_data.empty:
+            # DataFrame is empty
+            messagebox.showerror("Error", "No file at" + str(file_path))
+            return
+        preview_function()
+    except tk.TclError:
+        print("No valid selection or form 'STRING' not defined")
+
 
 def load_excel_data():
     global excel_data
@@ -19,8 +46,51 @@ def load_excel_data():
     print("Excel data:", excel_data)  # Print excel_data for debugging
     if excel_data.empty:
         # DataFrame is empty
-        messagebox.showerror("Error", "no file at" + str(file_path))
+        messagebox.showerror("Error", "No file at" + str(file_path))
         return
+
+def preview_function():
+    # Load the email template from the input field
+    email_template = email_template_entry.get("1.0", tk.END)
+
+    # Clear existing tabs/pages
+    for child in email_preview_notebook.winfo_children():
+        child.destroy()
+
+    # Iterate over the rows of the Excel file
+    for idx, row in excel_data.iterrows():
+        first_name = row[0].title()
+        last_name = row[1].title()
+        email = row[2]
+        signature = row[3]
+
+        # Replace placeholders in the email template with data
+        body = email_template.replace("{first_name}", first_name).replace("{last_name}", last_name).replace('\n', '<br>')
+
+        email_subject = subject_entry.get()
+
+        # Create a new tab/page for the email preview
+        email_page = ttk.Frame(email_preview_notebook)
+        email_preview_notebook.add(email_page, text="Email " + str(idx+1))
+
+        # Create an HtmlFrame widget for the email preview
+        preview_frame = HtmlFrame(email_page)
+        preview_frame.pack(fill=tk.BOTH)
+
+        attachments = ""
+
+        # Iterate over the attachment columns and add attachments to the email preview
+        for i in range(4, len(row)):
+            attachment_path = row[i]
+            if isinstance(attachment_path, str) and attachment_path.strip() != '':
+                attachments += os.path.basename(attachment_path) + "<br>"
+
+        if solve(email):
+            preview_frame.set_content(f"To: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}")
+        else:
+            preview_frame.set_content(f"To invalid email: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}")
+
+    messagebox.showinfo("Preview Complete", "Email preview completed successfully.")
 
 def preview_emails():
     load_excel_data()
@@ -31,57 +101,8 @@ def preview_emails():
         messagebox.showerror("Error", "Please load an Excel file first.")
         return
 
-    # Load the email template from the input field
-    email_template = email_template_entry.get("1.0", tk.END)
+    preview_function()
 
-    # Clear existing tabs/pages
-    for child in email_preview_notebook.winfo_children():
-        child.destroy()
-
-    # Keep track of the maximum number of lines in an email preview
-    max_lines = 0
-
-    # Iterate over the rows of the Excel file
-    for idx, row in excel_data.iterrows():
-        first_name = row[0].title()
-        last_name = row[1].title()
-        email = row[2]
-        
-        # Replace placeholders in the email template with data
-        email_body = email_template.replace("{first_name}", first_name).replace("{last_name}", last_name)
-
-        email_subject = subject_entry.get()
-
-        # Create a new tab/page for the email preview
-        email_page = ttk.Frame(email_preview_notebook)
-        email_preview_notebook.add(email_page, text="Email " + str(idx+1))
-
-        # Create a text widget for the email preview
-        preview_text = tk.Text(email_page)
-        preview_text.pack(fill=tk.BOTH, expand=True)
-        preview_text.insert(tk.END, f"To: {email}\nSubject: {email_subject}\n\n{email_body}\nAttachments:\n")
-
-        # Iterate over the attachment columns and add attachments to the email preview
-        for i in range(3, len(row)):
-            attachment_path = row[i]
-            if isinstance(attachment_path, str) and attachment_path.strip() != '':
-                preview_text.insert(tk.END, os.path.basename(attachment_path) + "\n")
-
-        # Disable editing in the preview text widget
-        preview_text.config(state=tk.DISABLED)
-
-        # Calculate the number of lines in the text widget
-        num_lines = int(preview_text.index('end-1c').split('.')[0])
-        # Update the maximum number of lines
-        max_lines = max(max_lines, num_lines)
-
-    # Calculate the desired window height based on the maximum number of lines
-    desired_window_height = 400+max_lines * 20  # Adjust the factor as needed
-
-    # Update the window height
-    window.geometry(f"{window_width}x{desired_window_height}")
-
-    messagebox.showinfo("Preview Complete", "Email preview completed successfully.")
 
 
 
@@ -108,7 +129,7 @@ def send_emails():
     server.starttls()
 
     try:
-        if smtp_username.strip() != '' and smtp_password.strip() != '' and "@" in smtp_username and "." in smtp_username:
+        if smtp_password.strip() != '' and solve(smtp_username):
             server.login(smtp_username, smtp_password)
         else:
             messagebox.showerror("Authentication Error", "Invalid SMTP credentials. Please check your username and password.")
@@ -122,20 +143,22 @@ def send_emails():
         first_name = row[0].title()
         last_name = row[1].title()
         email = row[2]
+        signature = row[3]
 
         # Replace placeholders in the email template with data
-        email_body = email_template.replace('{first_name}', first_name).replace('{last_name}', last_name).replace('\n', '<br>')
-        email_body = email_body + '<br>'
+        body = email_template.replace('{first_name}', first_name).replace('{last_name}', last_name).replace('\n', '<br>')
+        body += '<br>'
+        body += signature
 
         # Create the email message
         msg = MIMEMultipart()
         msg['From'] = smtp_username
         msg['To'] = email
         msg['Subject'] = email_subject
-        msg.attach(MIMEText(email_body, 'html'))
+        msg.attach(MIMEText(body, 'html'))
 
         # Iterate over the attachment columns and add attachments to the email
-        for i in range(3, len(row)):
+        for i in range(4, len(row)):
             attachment_path = row[i]
             if isinstance(attachment_path, str) and attachment_path.strip() != '':
                 attachment = MIMEApplication(open(attachment_path, 'rb').read())
@@ -151,23 +174,15 @@ def send_emails():
 
     messagebox.showinfo("Success", "Emails sent successfully!")
 
-
     # Close the SMTP connection
     server.quit()
 
 
 def open_preview_emails():
-    # ...
-
-    # Call the preview_emails function
     preview_emails()
 
 def open_send_emails():
-    # ...
-
-    # Call the send_emails function
     send_emails()
-
 
 # Create the main window
 window = tk.Tk()
@@ -178,12 +193,12 @@ icon_path = "C:/Temp/TAE/Projects/22. Bradley emails/icon.ico"
 # Set the window icon
 window.iconbitmap(icon_path)
 
-# Set the initial window width and height
-window_width = 800
-window_height = 600
+# Create a Tkinter window using TkinterDnD
+window = TkinterDnD.Tk()
 
-# Set the window geometry
-window.geometry(f"{window_width}x{window_height}")
+# Bind the drop event to the window
+window.drop_target_register(DND_FILES)
+window.dnd_bind('<<Drop>>', on_drop)
 
 # SMTP Server Settings
 smtp_username_label = tk.Label(window, text="SMTP Username:")
@@ -203,9 +218,9 @@ subject_entry = tk.Entry(window)
 subject_entry.pack()
 
 # Email Template
-template_label1 = tk.Label(window, text="Email Template:")
-template_label1.pack()
-email_template_entry = tk.Text(window, height=10, width=50)
+email_template_label = tk.Label(window, text="Email Template:")
+email_template_label.pack()
+email_template_entry = tk.Text(window, width=69, height=10)
 email_template_entry.pack()
 
 # Buttons
@@ -215,12 +230,12 @@ preview_emails_button.pack()
 send_emails_button = tk.Button(window, text="Send Emails", command=open_send_emails)
 send_emails_button.pack()
 
-# Create a notebook for the email previews
+# Create a notebook to display email previews
 email_preview_notebook = ttk.Notebook(window)
 email_preview_notebook.pack(fill=tk.BOTH, expand=True)
 
-# Run the main event loop
 window.mainloop()
+
 
 #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 #(echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> /Users/tae/.zprofile
