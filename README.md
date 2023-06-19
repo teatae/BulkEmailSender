@@ -1,10 +1,14 @@
 Welcome to Tae's Bulk Email Sender (Outlook for Windows and Mac)  
 ================================================
 
-## Example of excel file  
-Headers/columns must be First Name, Last Name, Email, Attachments1, Attachments2, Attachments3.  
+## Example of excel file [Windows]  
+Headers/columns must be First Name, Last Name, Email, Attachments1, Attachments2, Attachments3...  
 Each email is an excel row, attachment values are paths.  
 ![preview](https://github.com/teatae/BulkEmailSender/blob/main/excel.png?raw=true)  
+
+## Example of excel file [macOS]  
+Headers/columns must be First Name, Last Name, Email, Signature, Attachments1, Attachments2, Attachments3...  
+Each email is an excel row, attachment values are paths.  
 ![preview](https://github.com/teatae/BulkEmailSender/blob/main/excel2.png?raw=true)
 
 ## Preview of application  
