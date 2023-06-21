@@ -36,7 +36,6 @@ def on_drop(event):
     except tk.TclError:
         print("No valid selection or form 'STRING' not defined")
 
-
 def load_excel_data():
     global excel_data
     # Read the Excel file
@@ -67,7 +66,7 @@ def preview_function():
         # Replace placeholders in the email template with data
         body = email_template.replace("{first_name}", first_name).replace("{last_name}", last_name).replace('\n', '<br>')
 
-        email_subject = subject_entry.get()
+        email_subject = subject_entry.get().replace("{first_name}", first_name).replace("{last_name}", last_name).replace('\n', '<br>')
 
         # Create a new tab/page for the email preview
         email_page = ttk.Frame(email_preview_notebook)
@@ -84,11 +83,16 @@ def preview_function():
             attachment_path = row[i]
             if isinstance(attachment_path, str) and attachment_path.strip() != '':
                 attachments += os.path.basename(attachment_path) + "<br>"
+                print(attachment_path)
 
         if solve(email):
-            preview_frame.set_content(f"To: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}")
+            #content = f"<span style='font-size: 16pt;'>To: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}</span>"
+            content = f"To: {email}<br>Subject: {email_subject}<br><br>{body}<br>{signature}<br>Attachments:<br>{attachments}"
         else:
-            preview_frame.set_content(f"To invalid email: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}")
+            #content = f"<span style='font-size: 16pt;'>To INVALID EMAIL: {email}<br>Subject: {email_subject}<br><br>{body}{signature}<br>Attachments:<br>{attachments}</span>"
+            content = f"To invalid email: {email}<br>Subject: {email_subject}<br><br>{body}<br>{signature}<br>Attachments:<br>{attachments}"
+
+        preview_frame.set_content(content)
 
     messagebox.showinfo("Preview Complete", "Email preview completed successfully.")
 
@@ -100,19 +104,20 @@ def preview_emails():
     if excel_data is None:
         messagebox.showerror("Error", "Please load an Excel file first.")
         return
-
     preview_function()
-
-
-
 
 def send_emails():
     # Get SMTP variables from input fields
     smtp_username = smtp_username_entry.get()
     smtp_password = smtp_password_entry.get()
 
+    if smtp_username and smtp_password:
+        file = open("temp.txt","w")
+        file.write(smtp_username+"\n"+smtp_password)
+        file.close()
+
     # Get email subject from input field
-    email_subject = subject_entry.get()
+    email_subject = subject_entry.get().replace("{first_name}", first_name).replace("{last_name}", last_name).replace('\n', '<br>')
 
     # Read the Excel file
     global excel_data
@@ -177,15 +182,14 @@ def send_emails():
     # Close the SMTP connection
     server.quit()
 
-
 def open_preview_emails():
     preview_emails()
 
 def open_send_emails():
     send_emails()
 
-# Create the main window
-window = tk.Tk()
+# Create a Tkinter window using TkinterDnD
+window = TkinterDnD.Tk()
 window.title("Bulk Email Sender")
 
 icon_path = "C:/Temp/TAE/Projects/22. Bradley emails/icon.ico"
@@ -193,20 +197,18 @@ icon_path = "C:/Temp/TAE/Projects/22. Bradley emails/icon.ico"
 # Set the window icon
 window.iconbitmap(icon_path)
 
-# Create a Tkinter window using TkinterDnD
-window = TkinterDnD.Tk()
 
 # Bind the drop event to the window
 window.drop_target_register(DND_FILES)
 window.dnd_bind('<<Drop>>', on_drop)
 
 # SMTP Server Settings
-smtp_username_label = tk.Label(window, text="SMTP Username:")
+smtp_username_label = tk.Label(window, text="Email:")
 smtp_username_label.pack()
 smtp_username_entry = tk.Entry(window)
 smtp_username_entry.pack()
 
-smtp_password_label = tk.Label(window, text="SMTP Password:")
+smtp_password_label = tk.Label(window, text="Password:")
 smtp_password_label.pack()
 smtp_password_entry = tk.Entry(window, show="*")
 smtp_password_entry.pack()
@@ -216,16 +218,21 @@ subject_label = tk.Label(window, text="Email Subject:")
 subject_label.pack()
 subject_entry = tk.Entry(window)
 subject_entry.pack()
+subject_entry.insert(tk.END, "Congratulations {first_name}!")
 
 # Email Template
 email_template_label = tk.Label(window, text="Email Template:")
 email_template_label.pack()
 email_template_entry = tk.Text(window, width=69, height=10)
 email_template_entry.pack()
+email_template_entry.insert(tk.END, "Hello {first_name} {last_name},\n\nWelcome to TEATAE\n")
+#email_template_entry.insert(tk.END, "Hello {first_name} {last_name},\n\nWelcome to Fuze Logistics\n")
 
 # Buttons
-preview_emails_button = tk.Button(window, text="Preview Emails", command=open_preview_emails)
-preview_emails_button.pack()
+preview_emails_label = tk.Label(window, text="Drag your excel file here to load!")
+preview_emails_label.pack()
+#preview_emails_button = tk.Button(window, text="Preview Emails", command=open_preview_emails)
+#preview_emails_button.pack()
 
 send_emails_button = tk.Button(window, text="Send Emails", command=open_send_emails)
 send_emails_button.pack()
@@ -234,7 +241,14 @@ send_emails_button.pack()
 email_preview_notebook = ttk.Notebook(window)
 email_preview_notebook.pack(fill=tk.BOTH, expand=True)
 
-window.mainloop()
+try:
+    file = open("temp.txt","r")
+    lines = file.read().splitlines()
+    smtp_username_entry.insert(tk.END, lines[0])
+    smtp_password_entry.insert(tk.END, lines[1])
+    file.close()
+finally:
+    window.mainloop()
 
 
 #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
