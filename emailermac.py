@@ -58,9 +58,9 @@ def preview_function():
 
     # Iterate over the rows of the Excel file
     for idx, row in excel_data.iterrows():
-        first_name = row[0].title()
-        last_name = row[1].title()
-        email = row[2]
+        first_name = row[0].strip().title()
+        last_name = row[1].strip().title()
+        email = row[2].strip()
         signature = row[3]
 
         # Replace placeholders in the email template with data
@@ -117,7 +117,7 @@ def send_emails():
         file.close()
 
     # Get email subject from input field
-    email_subject = subject_entry.get().replace("{first_name}", first_name).replace("{last_name}", last_name).replace('\n', '<br>')
+    email_subject = subject_entry.get()
 
     # Read the Excel file
     global excel_data
@@ -145,9 +145,9 @@ def send_emails():
 
     # Iterate over the rows of the Excel file
     for _, row in excel_data.iterrows():
-        first_name = row[0].title()
-        last_name = row[1].title()
-        email = row[2]
+        first_name = row[0].strip().title()
+        last_name = row[1].strip().title()
+        email = row[2].strip()
         signature = row[3]
 
         # Replace placeholders in the email template with data
@@ -159,7 +159,7 @@ def send_emails():
         msg = MIMEMultipart()
         msg['From'] = smtp_username
         msg['To'] = email
-        msg['Subject'] = email_subject
+        msg['Subject'] = email_subject.replace("{first_name}", first_name).replace("{last_name}", last_name)
         msg.attach(MIMEText(body, 'html'))
 
         # Iterate over the attachment columns and add attachments to the email
@@ -191,12 +191,14 @@ def open_send_emails():
 # Create a Tkinter window using TkinterDnD
 window = TkinterDnD.Tk()
 window.title("Bulk Email Sender")
+# Set the width of the window
+window_width = 800  # Desired width
+window.wm_geometry(f"650x575")
 
-icon_path = "C:/Temp/TAE/Projects/22. Bradley emails/icon.ico"
+icon_path = "./icon.ico"
 
 # Set the window icon
 window.iconbitmap(icon_path)
-
 
 # Bind the drop event to the window
 window.drop_target_register(DND_FILES)
@@ -204,42 +206,47 @@ window.dnd_bind('<<Drop>>', on_drop)
 
 # SMTP Server Settings
 smtp_username_label = tk.Label(window, text="Email:")
-smtp_username_label.pack()
-smtp_username_entry = tk.Entry(window)
-smtp_username_entry.pack()
+smtp_username_label.grid(row=0, column=0, sticky=tk.W, padx=20)
+smtp_username_entry = tk.Entry(window, width=50)
+smtp_username_entry.grid(row=0, column=1, sticky=tk.W, padx=20)
 
 smtp_password_label = tk.Label(window, text="Password:")
-smtp_password_label.pack()
-smtp_password_entry = tk.Entry(window, show="*")
-smtp_password_entry.pack()
+smtp_password_label.grid(row=1, column=0, sticky=tk.W, padx=20)
+smtp_password_entry = tk.Entry(window, show="*", width=50)
+smtp_password_entry.grid(row=1, column=1, sticky=tk.W, padx=20)
 
 # Email Subject
 subject_label = tk.Label(window, text="Email Subject:")
-subject_label.pack()
-subject_entry = tk.Entry(window)
-subject_entry.pack()
+subject_label.grid(row=2, column=0, sticky=tk.W, padx=20)
+subject_entry = tk.Entry(window, width=50)
+subject_entry.grid(row=2, column=1, sticky=tk.W, padx=20)
 subject_entry.insert(tk.END, "Congratulations {first_name}!")
 
 # Email Template
 email_template_label = tk.Label(window, text="Email Template:")
-email_template_label.pack()
-email_template_entry = tk.Text(window, width=69, height=10)
-email_template_entry.pack()
-email_template_entry.insert(tk.END, "Hello {first_name} {last_name},\n\nWelcome to TEATAE\n")
-#email_template_entry.insert(tk.END, "Hello {first_name} {last_name},\n\nWelcome to Fuze Logistics\n")
+email_template_label.grid(row=3, column=0, sticky=tk.W, padx=20)
+email_template_entry = tk.Text(window, width=65, height=8)
+email_template_entry.grid(row=3, column=1, sticky=tk.W, padx=20)
+email_template_entry.insert(tk.END, "Hello {first_name} {last_name},\n\nWelcome to teatae's Bulk Email Sender!\n")
 
 # Buttons
 preview_emails_label = tk.Label(window, text="Drag your excel file here to load!")
-preview_emails_label.pack()
-#preview_emails_button = tk.Button(window, text="Preview Emails", command=open_preview_emails)
-#preview_emails_button.pack()
+preview_emails_label.grid(row=4, column=0, columnspan=2, padx=5)
 
 send_emails_button = tk.Button(window, text="Send Emails", command=open_send_emails)
-send_emails_button.pack()
+send_emails_button.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
 
 # Create a notebook to display email previews
 email_preview_notebook = ttk.Notebook(window)
-email_preview_notebook.pack(fill=tk.BOTH, expand=True)
+email_preview_notebook.grid(row=6, column=0, columnspan=2, sticky=tk.NSEW)
+
+# Configure grid weights to allow resizing of the notebook
+window.grid_rowconfigure(6, weight=1)
+window.grid_columnconfigure(0, weight=1)
+window.grid_columnconfigure(1, weight=1)
+
+# Configure column widths to match the email template
+window.grid_columnconfigure(1, minsize=email_template_entry.winfo_reqwidth())
 
 try:
     file = open("temp.txt","r")
