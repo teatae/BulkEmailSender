@@ -124,7 +124,7 @@ def send_emails():
     # Check if the Excel data is loaded
     if excel_data is None:
         messagebox.showerror("Error", "Please load an Excel file first.")
-        return
+        return False
 
     # Load the email template from the input field
     email_template = email_template_entry.get("1.0", tk.END)
@@ -138,10 +138,10 @@ def send_emails():
             server.login(smtp_username, smtp_password)
         else:
             messagebox.showerror("Authentication Error", "Invalid SMTP credentials. Please check your username and password.")
-            return
+            return False
     except smtplib.SMTPAuthenticationError as e:
         messagebox.showerror("Authentication Error", "Invalid SMTP credentials. Please check your username and password.")
-        return
+        return False
 
     # Iterate over the rows of the Excel file
     for _, row in excel_data.iterrows():
@@ -174,19 +174,56 @@ def send_emails():
         try:
             server.sendmail(smtp_username, email, msg.as_string())
         except smtplib.SMTPException as e:
-            messagebox.showerror("Error", f"Failed to send emails:\n{str(e)}")
-            return
-
-    messagebox.showinfo("Success", "Emails sent successfully!")
+            return False
 
     # Close the SMTP connection
     server.quit()
+
+    return True
 
 def open_preview_emails():
     preview_emails()
 
 def open_send_emails():
-    send_emails()
+    # Create a Toplevel window for the loading message
+    loading_window = tk.Toplevel(window)
+    loading_window.title("Loading")
+    loading_window.attributes('-topmost', True)  # Ensure it's on top of the main window
+
+    # Calculate the position of the loading window
+    app_width = window.winfo_width()
+    app_height = window.winfo_height()
+    loading_window_width = 150
+    loading_window_height = 75
+    x = window.winfo_x() + (app_width - loading_window_width) // 2
+    y = window.winfo_y() + (app_height - loading_window_height) // 2
+    loading_window.geometry(f"{loading_window_width}x{loading_window_height}+{x}+{y}")
+
+    # Create a label to display the loading message
+    loading_label = tk.Label(loading_window, text="Sending emails...")
+    loading_label.pack(pady=20)
+
+    # Simulate the email sending process
+    # Replace this with your actual email sending code
+    # Here, we're using the `after` method to schedule a callback after 3 seconds
+    window.after(5, lambda: complete_send_emails(loading_window))
+
+def complete_send_emails(loading_window):
+    # Perform the actual email sending process here
+    # Replace this with your actual email sending code
+
+    # Simulating a successful email sending
+    success = send_emails()
+
+    # Destroy the loading window
+    loading_window.destroy()
+
+    # Show success message box
+    if success:
+        messagebox.showinfo("Success", "Emails sent successfully!")
+    else:
+        messagebox.showerror("Error", "Failed to send emails.")
+
 
 # Create a Tkinter window using TkinterDnD
 window = TkinterDnD.Tk()
